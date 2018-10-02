@@ -10,7 +10,7 @@ import (
 )
 
 type FakeServiceProvider struct {
-	ProvisionStub        func(context.Context, provider.ProvisionData) (dashboardURL, operationData string, err error)
+	ProvisionStub        func(context.Context, provider.ProvisionData) (dashboardURL, operationData string, isAsync bool, err error)
 	provisionMutex       sync.RWMutex
 	provisionArgsForCall []struct {
 		arg1 context.Context
@@ -19,14 +19,16 @@ type FakeServiceProvider struct {
 	provisionReturns struct {
 		result1 string
 		result2 string
-		result3 error
+		result3 bool
+		result4 error
 	}
 	provisionReturnsOnCall map[int]struct {
 		result1 string
 		result2 string
-		result3 error
+		result3 bool
+		result4 error
 	}
-	DeprovisionStub        func(context.Context, provider.DeprovisionData) (operationData string, err error)
+	DeprovisionStub        func(context.Context, provider.DeprovisionData) (operationData string, isAsync bool, err error)
 	deprovisionMutex       sync.RWMutex
 	deprovisionArgsForCall []struct {
 		arg1 context.Context
@@ -34,11 +36,13 @@ type FakeServiceProvider struct {
 	}
 	deprovisionReturns struct {
 		result1 string
-		result2 error
+		result2 bool
+		result3 error
 	}
 	deprovisionReturnsOnCall map[int]struct {
 		result1 string
-		result2 error
+		result2 bool
+		result3 error
 	}
 	BindStub        func(context.Context, provider.BindData) (binding brokerapi.Binding, err error)
 	bindMutex       sync.RWMutex
@@ -54,19 +58,21 @@ type FakeServiceProvider struct {
 		result1 brokerapi.Binding
 		result2 error
 	}
-	UnbindStub        func(context.Context, provider.UnbindData) (err error)
+	UnbindStub        func(context.Context, provider.UnbindData) (unbinding brokerapi.UnbindSpec, err error)
 	unbindMutex       sync.RWMutex
 	unbindArgsForCall []struct {
 		arg1 context.Context
 		arg2 provider.UnbindData
 	}
 	unbindReturns struct {
-		result1 error
+		result1 brokerapi.UnbindSpec
+		result2 error
 	}
 	unbindReturnsOnCall map[int]struct {
-		result1 error
+		result1 brokerapi.UnbindSpec
+		result2 error
 	}
-	UpdateStub        func(context.Context, provider.UpdateData) (operationData string, err error)
+	UpdateStub        func(context.Context, provider.UpdateData) (operationData string, isAsync bool, err error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
@@ -74,11 +80,13 @@ type FakeServiceProvider struct {
 	}
 	updateReturns struct {
 		result1 string
-		result2 error
+		result2 bool
+		result3 error
 	}
 	updateReturnsOnCall map[int]struct {
 		result1 string
-		result2 error
+		result2 bool
+		result3 error
 	}
 	LastOperationStub        func(context.Context, provider.LastOperationData) (state brokerapi.LastOperationState, description string, err error)
 	lastOperationMutex       sync.RWMutex
@@ -100,7 +108,7 @@ type FakeServiceProvider struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeServiceProvider) Provision(arg1 context.Context, arg2 provider.ProvisionData) (dashboardURL, operationData string, err error) {
+func (fake *FakeServiceProvider) Provision(arg1 context.Context, arg2 provider.ProvisionData) (dashboardURL, operationData string, isAsync bool, err error) {
 	fake.provisionMutex.Lock()
 	ret, specificReturn := fake.provisionReturnsOnCall[len(fake.provisionArgsForCall)]
 	fake.provisionArgsForCall = append(fake.provisionArgsForCall, struct {
@@ -113,9 +121,9 @@ func (fake *FakeServiceProvider) Provision(arg1 context.Context, arg2 provider.P
 		return fake.ProvisionStub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2, ret.result3
+		return ret.result1, ret.result2, ret.result3, ret.result4
 	}
-	return fake.provisionReturns.result1, fake.provisionReturns.result2, fake.provisionReturns.result3
+	return fake.provisionReturns.result1, fake.provisionReturns.result2, fake.provisionReturns.result3, fake.provisionReturns.result4
 }
 
 func (fake *FakeServiceProvider) ProvisionCallCount() int {
@@ -130,32 +138,35 @@ func (fake *FakeServiceProvider) ProvisionArgsForCall(i int) (context.Context, p
 	return fake.provisionArgsForCall[i].arg1, fake.provisionArgsForCall[i].arg2
 }
 
-func (fake *FakeServiceProvider) ProvisionReturns(result1 string, result2 string, result3 error) {
+func (fake *FakeServiceProvider) ProvisionReturns(result1 string, result2 string, result3 bool, result4 error) {
 	fake.ProvisionStub = nil
 	fake.provisionReturns = struct {
 		result1 string
 		result2 string
-		result3 error
-	}{result1, result2, result3}
+		result3 bool
+		result4 error
+	}{result1, result2, result3, result4}
 }
 
-func (fake *FakeServiceProvider) ProvisionReturnsOnCall(i int, result1 string, result2 string, result3 error) {
+func (fake *FakeServiceProvider) ProvisionReturnsOnCall(i int, result1 string, result2 string, result3 bool, result4 error) {
 	fake.ProvisionStub = nil
 	if fake.provisionReturnsOnCall == nil {
 		fake.provisionReturnsOnCall = make(map[int]struct {
 			result1 string
 			result2 string
-			result3 error
+			result3 bool
+			result4 error
 		})
 	}
 	fake.provisionReturnsOnCall[i] = struct {
 		result1 string
 		result2 string
-		result3 error
-	}{result1, result2, result3}
+		result3 bool
+		result4 error
+	}{result1, result2, result3, result4}
 }
 
-func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 provider.DeprovisionData) (operationData string, err error) {
+func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 provider.DeprovisionData) (operationData string, isAsync bool, err error) {
 	fake.deprovisionMutex.Lock()
 	ret, specificReturn := fake.deprovisionReturnsOnCall[len(fake.deprovisionArgsForCall)]
 	fake.deprovisionArgsForCall = append(fake.deprovisionArgsForCall, struct {
@@ -168,9 +179,9 @@ func (fake *FakeServiceProvider) Deprovision(arg1 context.Context, arg2 provider
 		return fake.DeprovisionStub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1, ret.result2, ret.result3
 	}
-	return fake.deprovisionReturns.result1, fake.deprovisionReturns.result2
+	return fake.deprovisionReturns.result1, fake.deprovisionReturns.result2, fake.deprovisionReturns.result3
 }
 
 func (fake *FakeServiceProvider) DeprovisionCallCount() int {
@@ -185,26 +196,29 @@ func (fake *FakeServiceProvider) DeprovisionArgsForCall(i int) (context.Context,
 	return fake.deprovisionArgsForCall[i].arg1, fake.deprovisionArgsForCall[i].arg2
 }
 
-func (fake *FakeServiceProvider) DeprovisionReturns(result1 string, result2 error) {
+func (fake *FakeServiceProvider) DeprovisionReturns(result1 string, result2 bool, result3 error) {
 	fake.DeprovisionStub = nil
 	fake.deprovisionReturns = struct {
 		result1 string
-		result2 error
-	}{result1, result2}
+		result2 bool
+		result3 error
+	}{result1, result2, result3}
 }
 
-func (fake *FakeServiceProvider) DeprovisionReturnsOnCall(i int, result1 string, result2 error) {
+func (fake *FakeServiceProvider) DeprovisionReturnsOnCall(i int, result1 string, result2 bool, result3 error) {
 	fake.DeprovisionStub = nil
 	if fake.deprovisionReturnsOnCall == nil {
 		fake.deprovisionReturnsOnCall = make(map[int]struct {
 			result1 string
-			result2 error
+			result2 bool
+			result3 error
 		})
 	}
 	fake.deprovisionReturnsOnCall[i] = struct {
 		result1 string
-		result2 error
-	}{result1, result2}
+		result2 bool
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeServiceProvider) Bind(arg1 context.Context, arg2 provider.BindData) (binding brokerapi.Binding, err error) {
@@ -259,7 +273,7 @@ func (fake *FakeServiceProvider) BindReturnsOnCall(i int, result1 brokerapi.Bind
 	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 provider.UnbindData) (err error) {
+func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 provider.UnbindData) (unbinding brokerapi.UnbindSpec, err error) {
 	fake.unbindMutex.Lock()
 	ret, specificReturn := fake.unbindReturnsOnCall[len(fake.unbindArgsForCall)]
 	fake.unbindArgsForCall = append(fake.unbindArgsForCall, struct {
@@ -272,9 +286,9 @@ func (fake *FakeServiceProvider) Unbind(arg1 context.Context, arg2 provider.Unbi
 		return fake.UnbindStub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	return fake.unbindReturns.result1
+	return fake.unbindReturns.result1, fake.unbindReturns.result2
 }
 
 func (fake *FakeServiceProvider) UnbindCallCount() int {
@@ -289,26 +303,29 @@ func (fake *FakeServiceProvider) UnbindArgsForCall(i int) (context.Context, prov
 	return fake.unbindArgsForCall[i].arg1, fake.unbindArgsForCall[i].arg2
 }
 
-func (fake *FakeServiceProvider) UnbindReturns(result1 error) {
+func (fake *FakeServiceProvider) UnbindReturns(result1 brokerapi.UnbindSpec, result2 error) {
 	fake.UnbindStub = nil
 	fake.unbindReturns = struct {
-		result1 error
-	}{result1}
+		result1 brokerapi.UnbindSpec
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) UnbindReturnsOnCall(i int, result1 error) {
+func (fake *FakeServiceProvider) UnbindReturnsOnCall(i int, result1 brokerapi.UnbindSpec, result2 error) {
 	fake.UnbindStub = nil
 	if fake.unbindReturnsOnCall == nil {
 		fake.unbindReturnsOnCall = make(map[int]struct {
-			result1 error
+			result1 brokerapi.UnbindSpec
+			result2 error
 		})
 	}
 	fake.unbindReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
+		result1 brokerapi.UnbindSpec
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeServiceProvider) Update(arg1 context.Context, arg2 provider.UpdateData) (operationData string, err error) {
+func (fake *FakeServiceProvider) Update(arg1 context.Context, arg2 provider.UpdateData) (operationData string, isAsync bool, err error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
@@ -321,9 +338,9 @@ func (fake *FakeServiceProvider) Update(arg1 context.Context, arg2 provider.Upda
 		return fake.UpdateStub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1, ret.result2, ret.result3
 	}
-	return fake.updateReturns.result1, fake.updateReturns.result2
+	return fake.updateReturns.result1, fake.updateReturns.result2, fake.updateReturns.result3
 }
 
 func (fake *FakeServiceProvider) UpdateCallCount() int {
@@ -338,26 +355,29 @@ func (fake *FakeServiceProvider) UpdateArgsForCall(i int) (context.Context, prov
 	return fake.updateArgsForCall[i].arg1, fake.updateArgsForCall[i].arg2
 }
 
-func (fake *FakeServiceProvider) UpdateReturns(result1 string, result2 error) {
+func (fake *FakeServiceProvider) UpdateReturns(result1 string, result2 bool, result3 error) {
 	fake.UpdateStub = nil
 	fake.updateReturns = struct {
 		result1 string
-		result2 error
-	}{result1, result2}
+		result2 bool
+		result3 error
+	}{result1, result2, result3}
 }
 
-func (fake *FakeServiceProvider) UpdateReturnsOnCall(i int, result1 string, result2 error) {
+func (fake *FakeServiceProvider) UpdateReturnsOnCall(i int, result1 string, result2 bool, result3 error) {
 	fake.UpdateStub = nil
 	if fake.updateReturnsOnCall == nil {
 		fake.updateReturnsOnCall = make(map[int]struct {
 			result1 string
-			result2 error
+			result2 bool
+			result3 error
 		})
 	}
 	fake.updateReturnsOnCall[i] = struct {
 		result1 string
-		result2 error
-	}{result1, result2}
+		result2 bool
+		result3 error
+	}{result1, result2, result3}
 }
 
 func (fake *FakeServiceProvider) LastOperation(arg1 context.Context, arg2 provider.LastOperationData) (state brokerapi.LastOperationState, description string, err error) {

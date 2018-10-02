@@ -64,19 +64,20 @@ func (b *Broker) Provision(
 		Plan:       plan,
 	}
 
-	dashboardURL, operationData, err := b.Provider.Provision(providerCtx, provisionData)
+	dashboardURL, operationData, isAsync, err := b.Provider.Provision(providerCtx, provisionData)
 	if err != nil {
 		return brokerapi.ProvisionedServiceSpec{}, err
 	}
 
 	b.logger.Debug("provision-success", lager.Data{
-		"instance-id":   instanceID,
-		"details":       details,
-		"async-allowed": asyncAllowed,
+		"instance-id":    instanceID,
+		"details":        details,
+		"operation-data": operationData,
+		"is-async":       isAsync,
 	})
 
 	return brokerapi.ProvisionedServiceSpec{
-		IsAsync:       asyncAllowed,
+		IsAsync:       isAsync,
 		DashboardURL:  dashboardURL,
 		OperationData: operationData,
 	}, nil
@@ -118,19 +119,20 @@ func (b *Broker) Deprovision(
 		Details:    details,
 	}
 
-	operationData, err := b.Provider.Deprovision(providerCtx, deprovisionData)
+	operationData, isAsync, err := b.Provider.Deprovision(providerCtx, deprovisionData)
 	if err != nil {
 		return brokerapi.DeprovisionServiceSpec{}, err
 	}
 
 	b.logger.Debug("deprovision-success", lager.Data{
-		"instance-id":   instanceID,
-		"details":       details,
-		"async-allowed": asyncAllowed,
+		"instance-id":    instanceID,
+		"details":        details,
+		"operation-data": operationData,
+		"is-async":       isAsync,
 	})
 
 	return brokerapi.DeprovisionServiceSpec{
-		IsAsync:       asyncAllowed,
+		IsAsync:       isAsync,
 		OperationData: operationData,
 	}, nil
 }
@@ -195,7 +197,7 @@ func (b *Broker) Unbind(
 		AsyncAllowed: asyncAllowed,
 	}
 
-	err := b.Provider.Unbind(providerCtx, unbindData)
+	unbinding, err := b.Provider.Unbind(providerCtx, unbindData)
 	if err != nil {
 		return brokerapi.UnbindSpec{}, err
 	}
@@ -206,7 +208,7 @@ func (b *Broker) Unbind(
 		"details":     details,
 	})
 
-	return brokerapi.UnbindSpec{}, nil
+	return unbinding, nil
 }
 
 func (b *Broker) GetBinding(
@@ -257,19 +259,19 @@ func (b *Broker) Update(
 		Plan:       plan,
 	}
 
-	operationData, err := b.Provider.Update(providerCtx, updateData)
+	operationData, isAsync, err := b.Provider.Update(providerCtx, updateData)
 	if err != nil {
 		return brokerapi.UpdateServiceSpec{}, err
 	}
 
 	b.logger.Debug("update-success", lager.Data{
-		"instance-id":   instanceID,
-		"details":       details,
-		"async-allowed": asyncAllowed,
+		"instance-id": instanceID,
+		"details":     details,
+		"is-async":    isAsync,
 	})
 
 	return brokerapi.UpdateServiceSpec{
-		IsAsync:       asyncAllowed,
+		IsAsync:       isAsync,
 		OperationData: operationData,
 	}, nil
 }

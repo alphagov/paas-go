@@ -145,7 +145,7 @@ var _ = Describe("Broker", func() {
 		It("errors if provisioning fails", func() {
 			fakeProvider := &fakes.FakeServiceProvider{}
 			b := New(validConfig, fakeProvider, lager.NewLogger("broker"))
-			fakeProvider.ProvisionReturns("", "", errors.New("ERROR PROVISIONING"))
+			fakeProvider.ProvisionReturns("", "", true, errors.New("ERROR PROVISIONING"))
 
 			_, err := b.Provision(context.Background(), instanceID, validProvisionDetails, true)
 
@@ -166,7 +166,7 @@ var _ = Describe("Broker", func() {
 		It("returns the provisioned service spec", func() {
 			fakeProvider := &fakes.FakeServiceProvider{}
 			b := New(validConfig, fakeProvider, lager.NewLogger("broker"))
-			fakeProvider.ProvisionReturns("dashboard URL", "operation data", nil)
+			fakeProvider.ProvisionReturns("dashboard URL", "operation data", true, nil)
 
 			Expect(b.Provision(context.Background(), instanceID, validProvisionDetails, true)).
 				To(Equal(brokerapi.ProvisionedServiceSpec{
@@ -263,7 +263,7 @@ var _ = Describe("Broker", func() {
 		It("errors if deprovisioning fails", func() {
 			fakeProvider := &fakes.FakeServiceProvider{}
 			b := New(validConfig, fakeProvider, lager.NewLogger("broker"))
-			fakeProvider.DeprovisionReturns("", errors.New("ERROR DEPROVISIONING"))
+			fakeProvider.DeprovisionReturns("", true, errors.New("ERROR DEPROVISIONING"))
 
 			_, err := b.Deprovision(context.Background(), instanceID, validDeprovisionDetails, true)
 
@@ -284,7 +284,7 @@ var _ = Describe("Broker", func() {
 		It("returns the deprovisioned service spec", func() {
 			fakeProvider := &fakes.FakeServiceProvider{}
 			b := New(validConfig, fakeProvider, lager.NewLogger("broker"))
-			fakeProvider.DeprovisionReturns("operation data", nil)
+			fakeProvider.DeprovisionReturns("operation data", true, nil)
 
 			Expect(b.Deprovision(context.Background(), instanceID, validDeprovisionDetails, true)).
 				To(Equal(brokerapi.DeprovisionServiceSpec{
@@ -386,11 +386,13 @@ var _ = Describe("Broker", func() {
 			b := New(validConfig, fakeProvider, lager.NewLogger("broker"))
 			fakeProvider.BindReturns(brokerapi.Binding{
 				Credentials: "some-value-of-interface{}-type",
+				IsAsync:     true,
 			}, nil)
 
 			Expect(b.Bind(context.Background(), instanceID, bindingID, validBindDetails, true)).
 				To(Equal(brokerapi.Binding{
 					Credentials: "some-value-of-interface{}-type",
+					IsAsync:     true,
 				}))
 		})
 	})
@@ -456,7 +458,7 @@ var _ = Describe("Broker", func() {
 		It("errors if unbinding fails", func() {
 			fakeProvider := &fakes.FakeServiceProvider{}
 			b := New(validConfig, fakeProvider, lager.NewLogger("broker"))
-			fakeProvider.UnbindReturns(errors.New("ERROR UNBINDING"))
+			fakeProvider.UnbindReturns(brokerapi.UnbindSpec{IsAsync: true}, errors.New("ERROR UNBINDING"))
 
 			_, err := b.Unbind(context.Background(), instanceID, bindingID, validUnbindDetails, true)
 
@@ -607,7 +609,7 @@ var _ = Describe("Broker", func() {
 		It("errors if update fails", func() {
 			fakeProvider := &fakes.FakeServiceProvider{}
 			b := New(validConfig, fakeProvider, lager.NewLogger("broker"))
-			fakeProvider.UpdateReturns("", errors.New("ERROR UPDATING"))
+			fakeProvider.UpdateReturns("", true, errors.New("ERROR UPDATING"))
 
 			_, err := b.Update(context.Background(), instanceID, updatePlanDetails, true)
 
@@ -628,7 +630,7 @@ var _ = Describe("Broker", func() {
 		It("returns the update service spec", func() {
 			fakeProvider := &fakes.FakeServiceProvider{}
 			b := New(validConfig, fakeProvider, lager.NewLogger("broker"))
-			fakeProvider.UpdateReturns("operation data", nil)
+			fakeProvider.UpdateReturns("operation data", true, nil)
 
 			Expect(b.Update(context.Background(), instanceID, updatePlanDetails, true)).
 				To(Equal(brokerapi.UpdateServiceSpec{

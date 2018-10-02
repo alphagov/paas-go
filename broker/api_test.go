@@ -96,7 +96,7 @@ var _ = Describe("Broker API", func() {
 
 	Describe("Provision", func() {
 		It("accepts a provision request", func() {
-			fakeProvider.ProvisionReturns("dashboardURL", "operationData", nil)
+			fakeProvider.ProvisionReturns("dashboardURL", "operationData", true, nil)
 			res := brokerTester.Provision(
 				instanceID,
 				broker_tester.RequestBody{
@@ -121,7 +121,7 @@ var _ = Describe("Broker API", func() {
 		})
 
 		It("responds with an internal server error if the provider errors", func() {
-			fakeProvider.ProvisionReturns("", "", errors.New("some provisioning error"))
+			fakeProvider.ProvisionReturns("", "", true, errors.New("some provisioning error"))
 			res := brokerTester.Provision(
 				instanceID,
 				broker_tester.RequestBody{
@@ -152,7 +152,7 @@ var _ = Describe("Broker API", func() {
 
 	Describe("Deprovision", func() {
 		It("accepts a deprovision request", func() {
-			fakeProvider.DeprovisionReturns("operationData", nil)
+			fakeProvider.DeprovisionReturns("operationData", true, nil)
 			res := brokerTester.Deprovision(instanceID, service1, plan1, true)
 			Expect(res.Code).To(Equal(http.StatusAccepted))
 
@@ -167,7 +167,7 @@ var _ = Describe("Broker API", func() {
 		})
 
 		It("responds with an internal server error if the provider errors", func() {
-			fakeProvider.DeprovisionReturns("", errors.New("some deprovisioning error"))
+			fakeProvider.DeprovisionReturns("", true, errors.New("some deprovisioning error"))
 			res := brokerTester.Deprovision(instanceID, service1, plan1, true)
 			Expect(res.Code).To(Equal(http.StatusInternalServerError))
 		})
@@ -248,7 +248,7 @@ var _ = Describe("Broker API", func() {
 		})
 
 		It("responds with an internal server error if the provider errors", func() {
-			fakeProvider.UnbindReturns(errors.New("some unbinding error"))
+			fakeProvider.UnbindReturns(brokerapi.UnbindSpec{IsAsync: true}, errors.New("some unbinding error"))
 			res := brokerTester.Unbind(
 				instanceID,
 				service1,
@@ -262,7 +262,7 @@ var _ = Describe("Broker API", func() {
 
 	Describe("Update", func() {
 		It("accepts an update request", func() {
-			fakeProvider.UpdateReturns("operationData", nil)
+			fakeProvider.UpdateReturns("operationData", true, nil)
 			res := brokerTester.Update(
 				instanceID,
 				broker_tester.RequestBody{
@@ -287,7 +287,7 @@ var _ = Describe("Broker API", func() {
 		})
 
 		It("responds with an internal server error if the provider errors", func() {
-			fakeProvider.UpdateReturns("", errors.New("some update error"))
+			fakeProvider.UpdateReturns("", true, errors.New("some update error"))
 			res := brokerTester.Update(
 				instanceID,
 				broker_tester.RequestBody{
